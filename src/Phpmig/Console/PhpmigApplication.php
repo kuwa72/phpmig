@@ -44,6 +44,13 @@ class PhpmigApplication extends Application
             new Command\RollbackCommand(),
             new Command\RedoCommand()
         ));
+
+        set_error_handler(array($this, "errorHandler"));
+    }
+
+    public function errorHandler($errno, $errstr, $errfile , $errline)
+    {
+        throw new NoticeException("$errfile:$errno\n$errstr", $errno);
     }
 }
 
