@@ -45,7 +45,12 @@ class Sql implements AdapterInterface
 
     private function quotedTableName()
     {
-        return "`{$this->tableName}`";
+        switch($this->pdoDriverName) {
+        case 'sqlsrv':
+            return $this->tableName;
+        default:
+            return "`{$this->tableName}`";
+        }
     }
 
     /**
@@ -146,6 +151,25 @@ class Sql implements AdapterInterface
 
         switch($this->pdoDriverName)
         {
+            case 'sqlsrv':
+                $queries = array(
+
+                        'fetchAll'     => "SELECT version FROM ".$this->quotedTableName()." ORDER BY version ASC",
+
+                        'up'           => "INSERT INTO ".$this->quotedTableName()." VALUES (:version)",
+
+                        'down'         => "DELETE FROM ".$this->quotedTableName()." WHERE version = :version",
+
+                        'hasSchema'    => "Select Table_name as 'Table name'
+                            From Information_schema.Tables
+                            Where Table_type = 'BASE TABLE' and Objectproperty
+                            (Object_id(Table_name), 'IsMsShipped') = 0",
+
+                        'createSchema' => "CREATE table ".$this->quotedTableName()." (version nvarchar(255) NOT NULL)",
+
+                    );
+                break;
+
             case 'sqlite':
                 $queries = array(
 
